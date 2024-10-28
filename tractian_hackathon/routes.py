@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 import os
 from models import SafetyResponse
-from services.llm_service import process_pdf_with_assistant
+from services.llm_service import process_documents_with_assistant
 from services.audio_service import AudioTranscriber
 from openai import OpenAI
 import json
@@ -13,7 +13,12 @@ router = APIRouter()
 
 # Initialize OpenAI client
 client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variables
-pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
+pdf_paths = [
+    "prompts/nr-12-atualizada-2022-1.pdf", 
+    "prompts/WEG-w22-three-phase-electric-motor-50029265-brochure-english-web.pdf", 
+    "prompts/WEG-WMO-iom-installation-operation-and-maintenance-manual-of-electric-motors-50033244-manual-pt-en-es-web.pdf"
+    ]
+csv_path = "prompts/equipamentos.csv"
 
 def save_to_file(data: dict, filename: str = "service_orders.json"):
     """Save data to a JSON file when MongoDB is unavailable"""
@@ -48,7 +53,7 @@ async def add_service(problema: str = "Preciso de uma manutenção na minha máq
     """Add a new service order based on the safety analysis."""
     try:
         from app import db_connection
-        resposta = await process_pdf_with_assistant(pdf_path, problema, client)
+        resposta = await process_documents_with_assistant(pdf_paths, csv_path, problema, client)
         response_dict = resposta.model_dump()
         
         db = db_connection.get_db()
