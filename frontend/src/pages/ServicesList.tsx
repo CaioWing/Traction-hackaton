@@ -11,6 +11,7 @@ interface ManutencaoMaquina {
 interface Ordemserv {
   problema: string;
   equipamentos_necessarios: Equipamento[];
+  prioridade: string;
   solucao: {
     passos: Passo[];
     observacoes: string[];
@@ -65,6 +66,9 @@ function ServicesList() {
         {data?.map((service) => (
           <LinkDecor href={`/service/${service._id}`}>
             <ServiceBox title={service.ordem_servico[0].problema}>
+              <p style={{ color: 'red' }}>
+                prioridade {service.ordem_servico[0].prioridade}
+              </p>
               {service.ordem_servico[0].equipamentos_necessarios?.map(
                 (tool) => (
                   <p>
