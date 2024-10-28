@@ -75,7 +75,7 @@ function ServiceStep({
       <ContentDiv>
         <TitleDiv>
           <Title>{title}</Title>
-          <EstimatedTime>17m</EstimatedTime>
+          <EstimatedTime>{time}</EstimatedTime>
         </TitleDiv>
         <Description>{description}</Description>
       </ContentDiv>

@@ -17,10 +17,10 @@ router = APIRouter()
 # Initialize OpenAI client
 client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variables
 pdf_paths = [
-    "prompts/nr-12-atualizada-2022-1.pdf", 
-    "prompts/WEG-w22-three-phase-electric-motor-50029265-brochure-english-web.pdf", 
+    "prompts/nr-12-atualizada-2022-1.pdf",
+    "prompts/WEG-w22-three-phase-electric-motor-50029265-brochure-english-web.pdf",
     "prompts/WEG-WMO-iom-installation-operation-and-maintenance-manual-of-electric-motors-50033244-manual-pt-en-es-web.pdf"
-    ]
+]
 csv_path = "prompts/equipamentos.csv"
 
 
@@ -70,7 +70,7 @@ async def add_service(problema: str = "Preciso de uma manutenção na minha máq
         response_dict = resposta.model_dump()
 
         db = db_connection.get_db()
-        if db:
+        if db is not None:
             # If MongoDB is available, save to database
             mycol = db["serviceOrders"]
             mycol.insert_one(response_dict)
@@ -128,7 +128,7 @@ async def transcribe_audio():
         response_dict = resposta.model_dump()
 
         db = db_connection.get_db()
-        if db:
+        if db is not None:
             # If MongoDB is available, save to database
             mycol = db["serviceOrders"]
             mycol.insert_one(response_dict)
@@ -162,12 +162,32 @@ async def read_item(item_id):
 
 @router.post("/audioupload/")
 async def create_upload_file(file: UploadFile):
+    from app import db_connection
     try:
         transcriber = AudioTranscriber()
         audio_bytes = await file.read()
         transcription = transcriber.transcribe_audio_data(audio_bytes)
-        
-        return {"transcription": transcription}
+        resposta = await process_documents_with_assistant(pdf_paths, csv_path, transcription, client)
+        response_dict = resposta.model_dump()
+
+        db = db_connection.get_db()
+        if db is not None:
+            # If MongoDB is available, save to database
+            mycol = db["serviceOrders"]
+            res = mycol.insert_one(response_dict)
+            logger.info("Service order saved to MongoDB")
+            return {"transcription": transcription, "id": str(res.inserted_id)}
+        else:
+            # If MongoDB is unavailable, save to file
+            save_success = save_to_file(response_dict)
+            if not save_success:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to save service order to backup file"
+                )
+            logger.info("Service order saved to file")
+
+        return {"message": "Added with success!", "data": response_dict}
     except Exception as e:
         logger.error(f"Error in transcribe_audio: {str(e)}")
         raise HTTPException(
