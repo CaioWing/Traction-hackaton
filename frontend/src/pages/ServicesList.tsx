@@ -5,17 +5,29 @@ import { styled } from 'styled-components';
 
 interface ManutencaoMaquina {
   _id: string;
+  ordem_servico: Ordemserv[];
+}
+
+interface Ordemserv {
   problema: string;
+  equipamentos_necessarios: Equipamento[];
+  prioridade: string;
   solucao: {
     passos: Passo[];
-    equipamentos_necessarios: string[];
     observacoes: string[];
     referencias: string[];
   };
 }
 
+interface Equipamento {
+  nome: string;
+  sap_code: string;
+  quantidade: number;
+}
+
 interface Passo {
   ordem: number;
+  duracao: string;
   descricao: string;
   justificativa: string;
   medidas_seguranca: string[];
@@ -24,6 +36,11 @@ interface Passo {
 const LinkDecor = styled.a`
   text-decoration: none;
   color: inherit;
+`;
+
+const ServicesDisplay = styled.div`
+  display: flex;
+  flex-wrap: wrap;
 `;
 
 function ServicesList() {
@@ -45,15 +62,24 @@ function ServicesList() {
   return (
     <>
       <Header></Header>
-      {data?.map((service) => (
-        <LinkDecor href={`/service/${service._id}`}>
-          <ServiceBox title={service.problema}>
-            {service.solucao.equipamentos_necessarios.map((tool) => (
-              <p>{tool}</p>
-            ))}
-          </ServiceBox>
-        </LinkDecor>
-      ))}
+      <ServicesDisplay>
+        {data?.map((service) => (
+          <LinkDecor href={`/service/${service._id}`}>
+            <ServiceBox title={service.ordem_servico[0].problema}>
+              <p style={{ color: 'red' }}>
+                prioridade {service.ordem_servico[0].prioridade}
+              </p>
+              {service.ordem_servico[0].equipamentos_necessarios?.map(
+                (tool) => (
+                  <p>
+                    {tool.sap_code} - {tool.nome}
+                  </p>
+                )
+              )}
+            </ServiceBox>
+          </LinkDecor>
+        ))}
+      </ServicesDisplay>
     </>
   );
 }

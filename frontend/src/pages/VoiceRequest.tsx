@@ -13,7 +13,7 @@ function VoiceRequest() {
   const mediaStream = useRef<MediaStream>();
   const mediaRecorder = useRef<MediaRecorder>();
   const chunks = useRef<Blob[]>([]);
-  const [recordedUrl, setRecordedUrl] = useState('');
+  const [serviceUrl, setServiceUrl] = useState('');
   const [transcription, setTranscription] = useState('');
   const [recording, setRecording] = useState(false);
   const startRecording = async () => {
@@ -29,7 +29,6 @@ function VoiceRequest() {
       mediaRecorder.current.onstop = () => {
         const recordedBlob = new Blob(chunks.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(recordedBlob);
-        setRecordedUrl(url);
         chunks.current = [];
         const formData = new FormData();
 
@@ -39,7 +38,9 @@ function VoiceRequest() {
           body: formData,
         }).then((res) => {
           res.json().then((data) => {
+            console.log(data);
             setTranscription(data.transcription);
+            setServiceUrl(data.id);
           });
         });
       };
@@ -68,6 +69,17 @@ function VoiceRequest() {
           </Button>
         </Box>
         <h1 style={{ textAlign: 'center' }}>{transcription}</h1>
+        {serviceUrl == '' ? (
+          <></>
+        ) : (
+          <Button
+            href={`http://localhost:3000/service/${serviceUrl}`}
+            color='primary'
+            size='large'
+          >
+            Ir para serviço
+          </Button>
+        )}
       </CenteredDiv>
     </div>
   );

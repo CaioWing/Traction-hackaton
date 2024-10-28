@@ -10,7 +10,7 @@ const ServiceContainer = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 1.5vw;
+  font-size: 1.2vw;
   margin: 0;
   padding: 0;
   color: black;

@@ -2,20 +2,28 @@ import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import ServiceStep from '../components/ServiceStep';
 import { useParams } from 'react-router-dom';
-
 interface ManutencaoMaquina {
   _id: string;
+  ordem_servico: Ordemserv[];
+}
+
+interface Ordemserv {
   problema: string;
-  solucao: {
-    passos: Passo[];
-    equipamentos_necessarios: string[];
-    observacoes: string[];
-    referencias: string[];
-  };
+  equipamentos_necessarios: Equipamento[];
+  passos: Passo[];
+  observacoes: string[];
+  referencias: string[];
+}
+
+interface Equipamento {
+  nome: string;
+  sap_code: string;
+  quantidade: number;
 }
 
 interface Passo {
   ordem: number;
+  duracao: string;
   descricao: string;
   justificativa: string;
   medidas_seguranca: string[];
@@ -38,9 +46,9 @@ function ServiceOrder() {
   return (
     <>
       <Header />
-      {data?.solucao.passos.map((step) => (
+      {data?.ordem_servico[0].passos.map((step) => (
         <ServiceStep
-          time={`${step.ordem}`}
+          time={`${step.duracao}`}
           number={step.ordem}
           title={step.descricao}
           description={step.justificativa}
