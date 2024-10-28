@@ -3,6 +3,11 @@
 ## Visão Geral
 Gearing é uma aplicação baseada em FastAPI que auxilia no gerenciamento de ordens de serviço de manutenção através da análise de documentação técnica, processamento de transcrições de áudio e geração de procedimentos de segurança detalhados. O sistema integra-se com modelos da OpenAI para análise inteligente de documentos e recursos de conversão de fala em texto.
 
+![alt text](https://github.com/CaioWing/tractian-hackathon/blob/e5c7837e88ac6b12de33244ed15f9a42abb88ed3/media/images/api_docs.jpeg)
+![alt text](https://github.com/CaioWing/tractian-hackathon/blob/e5c7837e88ac6b12de33244ed15f9a42abb88ed3/media/images/gearing_checks.jpeg)
+![alt text](https://github.com/CaioWing/tractian-hackathon/blob/e5c7837e88ac6b12de33244ed15f9a42abb88ed3/media/images/gearing_tasks.jpeg)
+![alt text](https://github.com/CaioWing/tractian-hackathon/blob/e5c7837e88ac6b12de33244ed15f9a42abb88ed3/media/images/mongodb.jpeg)
+
 ## Funcionalidades
 
 ### 1. Gerenciamento de Ordens de Serviço
