@@ -1,0 +1,53 @@
+{
+    "problema": "Preciso de uma manutenção na minha máquina de prensa",
+    "solucao": {
+        "passos": [
+            {
+                "ordem": 1,
+                "descricao": "Realizar uma inspeção visual completa da prensa para identificar possíveis desgastes ou falhas nos componentes.",
+                "justificativa": "Conforme a norma, a manutenção preventiva e preditiva deve ser realizada para garantir a qualidade e segurança do funcionamento da prensa.",
+                "medidas_seguranca": [
+                    "Desligar a máquina antes de iniciar a manutenção.",
+                    "Utilizar equipamentos de proteção individual (EPIs) adequados, como luvas e óculos de proteção.",
+                    "Garantir que a área ao redor da prensa esteja livre de obstruções e pessoas não autorizadas."
+                ],
+                "duracao": "30min"
+            },
+            {
+                "ordem": 2,
+                "descricao": "Verificar o funcionamento dos dispositivos de parada de emergência e intertravamentos.",
+                "justificativa": "É necessário garantir que os dispositivos de segurança estejam funcionando corretamente para evitar acidentes durante a operação.",
+                "medidas_seguranca": [
+                    "Realizar testes nos dispositivos de parada de emergência enquanto a máquina está desligada.",
+                    "Instalar etiquetas de aviso em locais visíveis para lembrar a importância da segurança."
+                ],
+                "duracao": "20min"
+            },
+            {
+                "ordem": 3,
+                "descricao": "Realizar a lubrificação e limpeza das partes móveis da prensa.",
+                "justificativa": "A manutenção preventiva busca reduzir a probabilidade de falhas e degradação do funcionamento dos componentes.",
+                "medidas_seguranca": [
+                    "Desconectar a fonte de energia da prensa antes de realizar a lubrificação.",
+                    "Usar um pano limpo e produtos de limpeza adequados para evitar contaminação."
+                ],
+                "duracao": "15min"
+            }
+        ],
+        "equipamentos_necessarios": [
+            "Chave de fenda",
+            "Chave inglesa",
+            "Lubrificantes apropriados",
+            "Pano limpo",
+            "Equipamentos de proteção individual (EPIs)"
+        ],
+        "observacoes": [
+            "É importante seguir as recomendações do fabricante para a manutenção.",
+            "As manutenções devem ser registradas para futuras referências."
+        ],
+        "referencias": [
+            "NR 12 - Segurança no Trabalho em Máquinas e Equipamentos",
+            "ABNT NBR 14153 - Sistemas de Segurança em Máquinas"
+        ]
+    }
+}

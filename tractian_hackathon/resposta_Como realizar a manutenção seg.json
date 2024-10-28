@@ -1,0 +1,57 @@
+{
+    "problema": "Como realizar a manutenção segura de uma máquina de solda?",
+    "solucao": {
+        "passos": [
+            {
+                "ordem": 1,
+                "descricao": "Antes de iniciar a manutenção, desligue a máquina e desconecte-a da fonte de alimentação para evitar choques elétricos.",
+                "justificativa": "Baseado na norma 12.11.3, que prevê a necessidade de medidas de segurança durante a manutenção de máquinas e equipamentos.",
+                "medidas_seguranca": [
+                    "Desligar a máquina",
+                    "Desconectar da fonte de alimentação"
+                ]
+            },
+            {
+                "ordem": 2,
+                "descricao": "Verifique se há peças ou componentes danificados e, se necessário, substitua-os por peças originais ou equivalentes.",
+                "justificativa": "Conforme a norma 12.11.5, qualquer defeito que comprometa a segurança deve ser reparado ou substituído imediatamente.",
+                "medidas_seguranca": [
+                    "Inspeção visual",
+                    "Substituição de peças danificadas"
+                ]
+            },
+            {
+                "ordem": 3,
+                "descricao": "Faça a manutenção e limpeza regular dos componentes da máquina, conforme indicado pelo fabricante.",
+                "justificativa": "De acordo com a norma 12.11.4, a manutenção de máquinas e equipamentos deve contemplar a realização de manutenções preventivas, conforme indicado pelo fabricante.",
+                "medidas_seguranca": [
+                    "Limpeza dos componentes",
+                    "Manutenção preventiva"
+                ]
+            },
+            {
+                "ordem": 4,
+                "descricao": "Após a manutenção, certifique-se de que todas as proteções e dispositivos de segurança estão devidamente instalados e funcionando corretamente.",
+                "justificativa": "Baseado na norma 12.5, que estabelece a necessidade de garantir a eficácia dos sistemas de segurança após a manutenção.",
+                "medidas_seguranca": [
+                    "Verificar o funcionamento dos dispositivos de segurança",
+                    "Instalar todas as proteções"
+                ]
+            }
+        ],
+        "equipamentos_necessarios": [
+            "Ferramentas de manutenção",
+            "Equipamento de proteção individual"
+        ],
+        "observacoes": [
+            "A manutenção deve ser realizada por um profissional qualificado",
+            "Sempre seguir as instruções do fabricante da máquina"
+        ],
+        "referencias": [
+            "Norma 12.11.3",
+            "Norma 12.11.4",
+            "Norma 12.11.5",
+            "Norma 12.5"
+        ]
+    }
+}
