@@ -11,6 +11,7 @@ openai = "^1.52.2"
 pypdf2 = "^3.0.1"
 numpy = "^2.1.2"
 tiktoken = "^0.8.0"
+pydantic = "^2.9.2"
 
 
 [build-system]
