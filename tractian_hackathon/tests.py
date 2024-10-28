@@ -9,6 +9,7 @@ from typing import List, Dict
 from pydantic import BaseModel
 from fastapi import FastAPI
 import pymongo
+from fastapi.middleware.cors import CORSMiddleware
 
 
 class SafetyStep(BaseModel):
@@ -169,6 +170,13 @@ client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variabl
 pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
 problema = "Preciso de uma manutenção na minha máquina de prensa"
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["Gearing"]
 
