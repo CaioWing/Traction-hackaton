@@ -1,153 +1,154 @@
 from openai import OpenAI
-from typing_extensions import override
-from openai import AssistantEventHandler
 import PyPDF2
-import base64
 import os
-from typing import List
+import tiktoken
+import numpy as np
+import json
+import asyncio
+from typing import List, Dict
 
-class PDFHandler:
-    def __init__(self, pdf_path):
-        self.pdf_path = pdf_path
-        self.chunk_size = 200000  # Safe limit below OpenAI's 256000 character limit
-    
-    def extract_text_by_pages(self) -> List[str]:
-        """Extract text from PDF file page by page"""
-        pages_text = []
-        try:
-            with open(self.pdf_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                for page in pdf_reader.pages:
-                    pages_text.append(page.extract_text())
-            return pages_text
-        except Exception as e:
-            print(f"Error extracting text from PDF: {e}")
-            return []
-    
-    def create_chunks(self, pages_text: List[str]) -> List[str]:
-        """Create chunks of text that respect the token limit"""
-        chunks = []
-        current_chunk = ""
-        
-        for page_text in pages_text:
-            if len(current_chunk) + len(page_text) < self.chunk_size:
-                current_chunk += page_text + "\n"
-            else:
-                if current_chunk:
-                    chunks.append(current_chunk)
-                current_chunk = page_text + "\n"
-        
-        if current_chunk:  # Add the last chunk
-            chunks.append(current_chunk)
-            
-        return chunks
+def extract_text_from_pdf(pdf_path: str) -> str:
+    """Extracts text from a PDF file."""
+    text = ""
+    with open(pdf_path, "rb") as f:
+        reader = PyPDF2.PdfReader(f)
+        for page_num in range(len(reader.pages)):
+            page = reader.pages[page_num]
+            text += page.extract_text()
+    return text
 
-class EventHandler(AssistantEventHandler):
-    @override
-    def on_text_created(self, text) -> None:
-        print(f"\nassistant > ", end="", flush=True)
-    
-    @override
-    def on_text_delta(self, delta, snapshot):
-        print(delta.value, end="", flush=True)
-    
-    def on_tool_call_created(self, tool_call):
-        print(f"\nassistant > {tool_call.type}\n", flush=True)
-    
-    def on_tool_call_delta(self, delta, snapshot):
-        if delta.type == 'code_interpreter':
-            if delta.code_interpreter.input:
-                print(delta.code_interpreter.input, end="", flush=True)
-            if delta.code_interpreter.outputs:
-                print(f"\n\noutput >", flush=True)
-                for output in delta.code_interpreter.outputs:
-                    if output.type == "logs":
-                        print(f"\n{output.logs}", flush=True)
+def split_text(text: str, max_tokens: int = 500) -> List[str]:
+    """Splits text into chunks of a specified maximum number of tokens."""
+    encoding = tiktoken.get_encoding("cl100k_base")
+    tokens = encoding.encode(text)
+    chunks = []
+    start = 0
+    while start < len(tokens):
+        end = start + max_tokens
+        chunk_tokens = tokens[start:end]
+        chunk_text = encoding.decode(chunk_tokens)
+        chunks.append(chunk_text)
+        start = end
+    return chunks
 
-def process_pdf_with_assistant(pdf_path: str):
-    # Initialize OpenAI client
-    client = OpenAI()
+async def get_embeddings(texts: List[str], client: OpenAI) -> List[List[float]]:
+    """Generates embeddings for a list of texts using the new OpenAI client."""
+    embeddings = []
+    batch_size = 1000
     
-    # Create PDF handler and extract text
-    pdf_handler = PDFHandler(pdf_path)
-    pages_text = pdf_handler.extract_text_by_pages()
-    
-    if not pages_text:
-        raise Exception("Failed to extract text from PDF")
-    
-    # Create chunks that respect the token limit
-    chunks = pdf_handler.create_chunks(pages_text)
-    
-    # Create assistant
-    assistant = client.beta.assistants.create(
-        name="PDF Analyzer",
-        instructions="""You are a PDF document analyzer. Process and analyze the content of PDF documents.
-        You will receive the document in chunks. Keep track of the context across chunks and provide a 
-        comprehensive analysis.""",
-        tools=[{"type": "code_interpreter"}],
-        model="gpt-4"
-    )
-    
-    # Create thread for the conversation
-    thread = client.beta.threads.create()
-    
-    # Process each chunk
-    for i, chunk in enumerate(chunks):
-        print(f"\nProcessing chunk {i+1} of {len(chunks)}...")
-        
-        # Create message with chunk content
-        message = client.beta.threads.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content=f"This is part {i+1} of {len(chunks)} of the PDF content:\n\n{chunk}"
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i+batch_size]
+        response = await asyncio.get_event_loop().run_in_executor(
+            None,
+            lambda: client.embeddings.create(
+                input=batch,
+                model="text-embedding-ada-002"
+            )
         )
-        
-        # Stream the response for this chunk
-        with client.beta.threads.runs.stream(
-            thread_id=thread.id,
-            assistant_id=assistant.id,
-            event_handler=EventHandler(),
-        ) as stream:
-            stream.until_done()
-        
-        # Add a separator between chunks
-        print("\n" + "="*50 + "\n")
+        embeddings.extend([data.embedding for data in response.data])
+    return embeddings
+
+def vector_search(query_embedding: List[float], embeddings: List[List[float]], top_k: int = 5) -> List[int]:
+    """Performs a vector search to find the most similar embeddings."""
+    embeddings = np.array(embeddings)
+    query_embedding = np.array(query_embedding)
+    similarities = np.dot(embeddings, query_embedding)
+    top_k_indices = similarities.argsort()[-top_k:][::-1]
+    return top_k_indices
+
+async def process_pdf_with_assistant(pdf_path: str, problema: str, client: OpenAI) -> Dict:
+    """Process PDF and generate response using the new OpenAI client."""
+    # Step 1: Extract text from the PDF
+    text = extract_text_from_pdf(pdf_path)
     
-    # Request final summary
-    final_message = client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content="Now that you have processed all chunks, please provide a comprehensive summary of the entire document."
+    # Step 2: Split the text into chunks
+    chunks = split_text(text, max_tokens=500)
+    
+    # Step 3: Create embeddings for each chunk
+    print("Creating embeddings for chunks...")
+    chunk_embeddings = await get_embeddings(chunks, client)
+    
+    # Step 4: Create an embedding for the query/problem
+    query_embedding_response = await asyncio.get_event_loop().run_in_executor(
+        None,
+        lambda: client.embeddings.create(
+            input=problema,
+            model="text-embedding-ada-002"
+        )
     )
+    query_embedding = query_embedding_response.data[0].embedding
     
-    # Stream the final summary
-    with client.beta.threads.runs.stream(
-        thread_id=thread.id,
-        assistant_id=assistant.id,
-        event_handler=EventHandler(),
-    ) as stream:
-        stream.until_done()
-
-def process_multiple_pdfs(pdf_paths: List[str]):
-    """Process multiple PDFs sequentially"""
-    for pdf_path in pdf_paths:
-        print(f"\nProcessing PDF: {pdf_path}")
-        print("="*50)
-        try:
-            process_pdf_with_assistant(pdf_path)
-        except Exception as e:
-            print(f"Error processing PDF {pdf_path}: {e}")
-        print("\n" + "="*50 + "\n")
-
-# Usage example
-if __name__ == "__main__":
-    # Single PDF processing
-    pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
+    # Step 5: Retrieve relevant chunks using vector search
+    top_k_indices = vector_search(query_embedding, chunk_embeddings, top_k=5)
+    relevant_chunks = [chunks[i] for i in top_k_indices]
+    
+    # Step 6: Prepare the prompt for the assistant
+    context = "\n\n".join(relevant_chunks)
+    instructions = """
+Você é um especialista em análise de normas técnicas e segurança.
+Use o conteúdo dos documentos fornecidos para responder problemas específicos.
+Suas respostas devem ser em português e estruturadas no seguinte formato JSON:
+{
+    "problema": "descrição do problema",
+    "solucao": {
+        "passos": [
+            {
+                "ordem": 1,
+                "descricao": "descrição detalhada do passo",
+                "justificativa": "baseado em qual parte da norma",
+                "medidas_seguranca": ["lista de medidas de segurança"]
+            }
+        ],
+        "equipamentos_necessarios": ["lista de equipamentos"],
+        "observacoes": ["observações importantes"],
+        "referencias": ["referências específicas da norma"]
+    }
+}
+Mantenha suas respostas técnicas e precisas, fundamentadas no conteúdo do documento.
+"""
+    prompt = f"{instructions}\n\nContexto:\n{context}\n\nProblema: {problema}\nResposta:"
+    
+    # Step 7: Get the assistant's response using the new chat completion endpoint
+    print("Generating assistant's response...")
+    response = await asyncio.get_event_loop().run_in_executor(
+        None,
+        lambda: client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=1500
+        )
+    )
+    assistant_reply = response.choices[0].message.content
+    
+    # Step 8: Parse the assistant's response as JSON
     try:
-        process_pdf_with_assistant(pdf_path)
-    except Exception as e:
-        print(f"Error processing PDF: {e}")
+        json_response = json.loads(assistant_reply)
+        output_filename = f"resposta_{problema[:30]}.json"
+        with open(output_filename, "w", encoding="utf-8") as f:
+            json.dump(json_response, f, ensure_ascii=False, indent=4)
+        print(f"\nResposta salva em: {output_filename}")
+        return json_response
+    except json.JSONDecodeError:
+        print("Aviso: Não foi possível converter a resposta para JSON")
+        return {
+            "erro": "Formato de resposta inválido",
+            "resposta_original": assistant_reply
+        }
+
+async def main():
+    # Initialize the OpenAI client
+    client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variables
     
-    # Multiple PDFs processing
-    # pdf_paths = ["path1.pdf", "path2.pdf", "path3.pdf"]
-    # process_multiple_pdfs(pdf_paths)
+    pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
+    problema = "Como realizar a manutenção segura de uma máquina de solda?"
+    
+    try:
+        resposta = await process_pdf_with_assistant(pdf_path, problema, client)
+        print("\nResposta estruturada:")
+        print(json.dumps(resposta, ensure_ascii=False, indent=4))
+    except Exception as e:
+        print(f"Erro ao processar PDF: {e}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
