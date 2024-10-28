@@ -15,7 +15,7 @@ class Employee:
 
     def add_workload(self, workload, task_name):
         self.current_workload += workload
-        self.history.append((task_name, datetime.now().date()))
+        self.history.append((task_name, datetime.now()))
 
     def reset_workload(self):
         self.current_workload = 0
@@ -47,8 +47,9 @@ def record_history(connection, employee_id, task: Task):
     connection.commit()
     print(f"{employee_id} history updated. {task} added")
 
-def _is_last_task_done_on_weekend(date: datetime.date) -> bool:
-    return datetime.date.weekday > 4
+def _is_last_task_done_on_weekend(date) -> bool:
+    
+    return date[-1].weekday() > 4
 
 def _select_employees_for_task_by_experience(employees: List[Employee], experience_required: float) -> List[Employee]:
     return [emp for emp in employees if emp.experience >= experience_required]
@@ -66,6 +67,7 @@ def get_suitable_employees_for_task(employees: List[Employee], task, max_workloa
     
     for emp in suitable_employees:
         if emp.history:
+            
             if _is_last_task_done_on_weekend(emp.history[-1]): suitable_employees.remove(emp)
 
     exp_weight = 0.2
