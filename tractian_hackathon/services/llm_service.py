@@ -155,7 +155,7 @@ async def process_documents_with_assistant(
     instructions = """
 Você é um especialista em análise de normas técnicas e segurança.
 Use o conteúdo dos documentos fornecidos para responder problemas específicos.
-Os códigos SAP e equipamentos mencionados devem corresponder EXATAMENTE aos listados no catálogo fornecido.
+Os códigos SAP e equipamentos mencionados devem corresponder *EXATAMENTE* aos listados no catálogo fornecido.
 Suas respostas devem ser em português e estruturadas no seguinte formato JSON:
 {
     "ordem_servico": [
@@ -219,7 +219,7 @@ mais urgentes.
     response = await asyncio.get_event_loop().run_in_executor(
         None,
         lambda: client.beta.chat.completions.parse(
-            model="gpt-4o-mini-2024-07-18",
+            model="gpt-4o-2024-08-06",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1500,
