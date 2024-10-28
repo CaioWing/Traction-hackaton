@@ -30,7 +30,7 @@ class SafetySolution(BaseModel):
 
 class SafetyResponse(BaseModel):
     problema: str
-    solucao: SafetySolution
+    solucao: List[SafetySolution]
 
 
 class MyJSONEncoder(json.JSONEncoder):
