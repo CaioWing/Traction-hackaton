@@ -1,6 +1,6 @@
 from bson import ObjectId  # bson = binary JSON, the data format used by MongoDB
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, File, UploadFile
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -131,3 +131,17 @@ async def read_item(item_id):
         # If MongoDB is available, get from database
         mycol = db["serviceOrders"]
         return json.loads(MyJSONEncoder().encode(mycol.find_one({'_id': ObjectId(item_id)})))
+
+
+@router.post("/audioupload/")
+async def create_upload_file(file: UploadFile):
+    try:
+        transcriber = AudioTranscriber()
+        audio_bytes = await file.read()
+        transcription = transcriber.transcribe_audio_data(audio_bytes)
+        return {"transcription": transcription}
+    except Exception as e:
+        logger.error(f"Error in transcribe_audio: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error transcribing audio: {str(e)}")
+    return {"filename": file.filename}
