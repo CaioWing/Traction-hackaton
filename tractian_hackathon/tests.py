@@ -6,6 +6,24 @@ import numpy as np
 import json
 import asyncio
 from typing import List, Dict
+from pydantic import BaseModel
+
+class SafetyStep(BaseModel):
+    ordem: int
+    descricao: str
+    justificativa: str
+    medidas_seguranca: List[str]
+    duracao: str
+
+class SafetySolution(BaseModel):
+    passos: List[SafetyStep]
+    equipamentos_necessarios: List[str]
+    observacoes: List[str]
+    referencias: List[str]
+
+class SafetyResponse(BaseModel):
+    problema: str
+    solucao: SafetySolution
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """Extracts text from a PDF file."""
@@ -97,9 +115,10 @@ Suas respostas devem ser em português e estruturadas no seguinte formato JSON:
                 "descricao": "descrição detalhada do passo",
                 "justificativa": "baseado em qual parte da norma",
                 "medidas_seguranca": ["lista de medidas de segurança"]
+                "duracao": "20min"
             }
         ],
-        "equipamentos_necessarios": ["lista de equipamentos"],
+        "equipamentos_necessarios": ["lista de equipamentos necessários para realização dos serviços"],
         "observacoes": ["observações importantes"],
         "referencias": ["referências específicas da norma"]
     }
@@ -112,41 +131,34 @@ Mantenha suas respostas técnicas e precisas, fundamentadas no conteúdo do docu
     print("Generating assistant's response...")
     response = await asyncio.get_event_loop().run_in_executor(
         None,
-        lambda: client.chat.completions.create(
-            model="gpt-4",
+        lambda: client.beta.chat.completions.parse(
+            model="gpt-4o-mini-2024-07-18",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
-            max_tokens=1500
+            max_tokens=1500,
+            response_format=SafetyResponse,
         )
     )
-    assistant_reply = response.choices[0].message.content
     
-    # Step 8: Parse the assistant's response as JSON
-    try:
-        json_response = json.loads(assistant_reply)
-        output_filename = f"resposta_{problema[:30]}.json"
-        with open(output_filename, "w", encoding="utf-8") as f:
-            json.dump(json_response, f, ensure_ascii=False, indent=4)
-        print(f"\nResposta salva em: {output_filename}")
-        return json_response
-    except json.JSONDecodeError:
-        print("Aviso: Não foi possível converter a resposta para JSON")
-        return {
-            "erro": "Formato de resposta inválido",
-            "resposta_original": assistant_reply
-        }
+    safety_response = response.choices[0].message.parsed
+    
+    # Save response to file
+    output_filename = f"resposta_{problema[:30]}.json"
+    with open(output_filename, "w", encoding="utf-8") as f:
+        json.dump(safety_response.model_dump(), f, ensure_ascii=False, indent=4)
+    print(f"\nResposta salva em: {output_filename}")
+    
+    return safety_response
 
 async def main():
     # Initialize the OpenAI client
     client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variables
     
     pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
-    problema = "Como realizar a manutenção segura de uma máquina de solda?"
+    problema = "Preciso de uma manutenção na minha máquina de prensa"
     
     try:
         resposta = await process_pdf_with_assistant(pdf_path, problema, client)
-        print("\nResposta estruturada:")
-        print(json.dumps(resposta, ensure_ascii=False, indent=4))
     except Exception as e:
         print(f"Erro ao processar PDF: {e}")
 
