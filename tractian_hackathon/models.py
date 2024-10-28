@@ -1,5 +1,10 @@
-from typing import List
+from typing import List, Literal
 from pydantic import BaseModel
+
+class Equipament(BaseModel):
+    nome: str
+    sap_code: str
+    quantidade: int
 
 class SafetyStep(BaseModel):
     ordem: int
@@ -9,11 +14,12 @@ class SafetyStep(BaseModel):
     duracao: str
 
 class SafetySolution(BaseModel):
+    problema: str
     passos: List[SafetyStep]
-    equipamentos_necessarios: List[str]
+    equipamentos_necessarios: List[Equipament]
     observacoes: List[str]
     referencias: List[str]
+    prioridade: Literal['baixa', 'media', 'alta', 'maxima']
 
 class SafetyResponse(BaseModel):
-    problema: str
-    solucao: SafetySolution
+    ordem_servico: List[SafetySolution]
