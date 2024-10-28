@@ -1,3 +1,4 @@
+from bson import ObjectId
 from openai import OpenAI
 import PyPDF2
 import os
@@ -30,6 +31,13 @@ class SafetySolution(BaseModel):
 class SafetyResponse(BaseModel):
     problema: str
     solucao: SafetySolution
+
+
+class MyJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)  # this will return the ID as a string
+        return json.JSONEncoder.default(self, o)
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -198,4 +206,4 @@ async def read_item():
 async def read_item():
     mycol = mydb["serviceOrders"]
     print(list(mycol.find({}, {'_id': False})))
-    return list(mycol.find({}, {'_id': False}))
+    return MyJSONEncoder().encode(list(mycol.find({})))
