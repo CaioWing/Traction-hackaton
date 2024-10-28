@@ -119,9 +119,31 @@ async def get_services():
 async def transcribe_audio():
     """Endpoint to handle audio transcription."""
     try:
+        from app import db_connection
+        db = db_connection.get_db()
+
         transcriber = AudioTranscriber()
         transcription = transcriber.transcribe_from_microphone()
-        return {"transcription": transcription}
+        resposta = await process_documents_with_assistant(pdf_paths, csv_path, transcription, client)
+        response_dict = resposta.model_dump()
+
+        db = db_connection.get_db()
+        if db:
+            # If MongoDB is available, save to database
+            mycol = db["serviceOrders"]
+            mycol.insert_one(response_dict)
+            logger.info("Service order saved to MongoDB")
+        else:
+            # If MongoDB is unavailable, save to file
+            save_success = save_to_file(response_dict)
+            if not save_success:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to save service order to backup file"
+                )
+            logger.info("Service order saved to file")
+
+        return {"message": "Added with success!", "data": response_dict}
     except Exception as e:
         logger.error(f"Error in transcribe_audio: {str(e)}")
         raise HTTPException(
@@ -144,6 +166,7 @@ async def create_upload_file(file: UploadFile):
         transcriber = AudioTranscriber()
         audio_bytes = await file.read()
         transcription = transcriber.transcribe_audio_data(audio_bytes)
+        
         return {"transcription": transcription}
     except Exception as e:
         logger.error(f"Error in transcribe_audio: {str(e)}")
