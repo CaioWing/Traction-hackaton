@@ -1,0 +1,92 @@
+{
+    "Ferramentas de Corte": {
+        "Serra Circular": "MAT001",
+        "Disco de Corte": "MAT002",
+        "Serra de Fita": "MAT003",
+        "Disco de Desbaste": "MAT004",
+        "Broca de Aco Rapido 10mm": "MAT005",
+        "Conjunto de Fresas para Usinagem": "MAT006",
+        "Lamina de Serra Sabre": "MAT007",
+        "Lixadeira Angular": "EQP001"
+    },
+    "Ferramentas de Medicao": {
+        "Paquimetro Digital": "MAT101",
+        "Micrometro": "MAT102",
+        "Relogio Comparador": "MAT103",
+        "Trena de Aco 5m": "MAT104",
+        "Nivel de Bolha": "MAT105",
+        "Goniometro Digital": "MAT106",
+        "Manometro para Pressao": "MAT107",
+        "Calibrador de Roscas": "MAT108"
+    },
+    "Equipamentos de Solda": {
+        "Maquina de Solda MIG": "EQP201",
+        "Eletrodo de Solda Inox": "MAT201",
+        "Mascara de Solda Automatica": "MAT202",
+        "Macarico de Corte Oxiacetilenico": "EQP202",
+        "Tocha de Solda TIG": "MAT203",
+        "Fio de Solda MIG ER70S-6": "MAT204",
+        "Regulador de Pressao para Gas": "MAT205",
+        "Tubo de Gas Acetileno": "MAT206"
+    },
+    "Lubrificacao e Manutencao": {
+        "Graxa Industrial": "MAT301",
+        "Oleo Lubrificante 10W30": "MAT302",
+        "Bomba de Graxa Pneumatica": "EQP301",
+        "Limpa Contatos Eletricos": "MAT303",
+        "Spray Desengripante": "MAT304",
+        "Veda Rosca em Fita": "MAT305"
+    },
+    "Equipamentos de Seguranca": {
+        "Capacete de Seguranca com Aba": "MAT401",
+        "Luvas Termicas de Alta Resistencia": "MAT402",
+        "Oculos de Protecao Antirrespingos": "MAT403",
+        "Protetor Auricular Tipo Plug": "MAT404",
+        "Mascara Respiratoria com Filtro P3": "MAT405",
+        "Cinto de Seguranca para Trabalho em Altura": "MAT406",
+        "Sapato de Seguranca com Biqueira de Aco": "MAT407",
+        "Protetor Facial de Policarbonato": "MAT408"
+    },
+    "Equipamentos de Elevacao": {
+        "Talha Eletrica de Corrente": "EQP501",
+        "Corrente de Elevacao de 10m": "MAT501",
+        "Gancho Giratorio com Trava de Seguranca": "MAT502",
+        "Cinta de Elevacao com Olhal": "MAT503",
+        "Carrinho de Transporte de Bobinas": "EQP502",
+        "Macaco Hidraulico 10 Toneladas": "EQP503"
+    },
+    "Componentes Mecanicos": {
+        "Rolamento Esferico de Precisao": "MAT601",
+        "Parafuso de Alta Resistencia M12": "MAT602",
+        "Correia de Transmissao Industrial": "MAT603",
+        "Junta de Vedacao em Borracha": "MAT604",
+        "Engrenagem Cilindrica de Aco": "MAT605",
+        "Bucha de Bronze Autolubrificante": "MAT606",
+        "Eixo de Transmissao": "MAT607",
+        "Polia de Aluminio": "MAT608"
+    },
+    "Equipamentos Hidraulicos": {
+        "Valvula Solenoide Hidraulica": "EQP601",
+        "Bomba Hidraulica de Pistao": "EQP602",
+        "Mangueira Hidraulica de Alta Pressao": "MAT701",
+        "Conector Hidraulico Rapido": "MAT702"
+    },
+    "Equipamentos Eletricos": {
+        "Motor Eletrico Trifasico 5HP": "EQP701",
+        "Cabo Eletrico 10mm2": "MAT801",
+        "Disjuntor de 100A": "MAT802",
+        "Quadro de Comando Eletrico com Inversor de Frequencia": "EQP702",
+        "Chave Seccionadora": "MAT803",
+        "Fusovel NH 100A": "MAT804",
+        "Tomada Industrial 380V": "MAT805"
+    },
+    "Ferramentas Manuais": {
+        "Chave de Fenda Phillips 6mm": "MAT901",
+        "Alicate de Corte": "MAT902",
+        "Martelo de Borracha": "MAT903",
+        "Torquometro 40-200Nm": "MAT904",
+        "Conjunto de Chaves Allen": "MAT905",
+        "Chave Estrela 12mm": "MAT906",
+        "Serra Manual": "MAT907"
+    }
+}
