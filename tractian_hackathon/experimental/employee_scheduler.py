@@ -26,6 +26,9 @@ class Task:
         self.workload = workload
         self.required_experience = required_experience
         self.date = date
+    
+    def __str__(self) -> str:
+        return f'(Task: {self.name}, required experience: {self.required_experience}, limit date: {self.date}).'
 
 def fetch_employees(connection):
     cursor = connection.cursor()
@@ -37,11 +40,12 @@ def fetch_tasks(connection):
     cursor.execute("SELECT name, workload, required_experience FROM tasks")
     return [Task(name, workload, required_experience) for name, workload, required_experience in cursor.fetchall()]
 
-def record_history(connection, employee_id, task_name):
+def record_history(connection, employee_id, task: Task):
     cursor = connection.cursor()
     cursor.execute("INSERT INTO history (employee_id, task_name, date) VALUES (?, ?, ?)",
-                   (employee_id, task_name, datetime.now().date()))
+                   (employee_id, task.name, task.date))
     connection.commit()
+    print(f"{employee_id} history updated. {task} added")
 
 def _is_last_task_done_on_weekend(date: datetime.date) -> bool:
     return datetime.date.weekday > 4
@@ -83,7 +87,8 @@ def optimize_schedule_tasks(employees: List[Employee], tasks: List[Task], max_wo
             task_employee.append((task, selected_employee))
             selected_employee.add_workload(task.workload, task.name)
             print(f"Assigned task '{task.name}' to {selected_employee.name} on {datetime.now().date()}")
-            
+    
+    return task_employee
 
 if __name__ == '__main__':
     
@@ -95,8 +100,5 @@ if __name__ == '__main__':
     employees = [Employee(i, f'Emp[{i}]', choice(exp)) for i in range(num_emp)]
     tasks = [Task(f'Task[{i}]', max_workload*choice(exp), choice(exp)) for i in range(20)]
 
-    optimize_schedule_tasks(employees, tasks, max_workload)
+    task_employee = optimize_schedule_tasks(employees, tasks, max_workload)
     # record_history(connection, selected_employee.id, task.name)
-
-
-    james = Employee(0, 'Jame Waterhouse', 0, 0)
