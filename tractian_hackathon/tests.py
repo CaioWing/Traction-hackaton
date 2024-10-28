@@ -143,7 +143,7 @@ Mantenha suas respostas técnicas e precisas, fundamentadas no conteúdo do docu
     safety_response = response.choices[0].message.parsed
     
     # Save response to file
-    output_filename = f"resposta_{problema[:30]}.json"
+    output_filename = f"resposta_problema.json"
     with open(output_filename, "w", encoding="utf-8") as f:
         json.dump(safety_response.model_dump(), f, ensure_ascii=False, indent=4)
     print(f"\nResposta salva em: {output_filename}")
@@ -155,7 +155,16 @@ async def main():
     client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variables
     
     pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
-    problema = "Preciso de uma manutenção na minha máquina de prensa"
+    problema = """Bom dia Oswaldo, tudo certo? Passando para a gente alinhar as coisas que ficaram pendente para a gente fazer no domingo Ficaram alguns serviços que acabaram que a gente não conseguiu tocar durante a semana Mas
+deixa eu explicar aqui para vocês algumas coisas que a gente tem que resolver logo, tá bom? Então conhecendo pela linha 3, eu preciso que façam a lubrificação dos rolamentos ali Essa máquina ali já está dando o
+s sinais de desgaste já tem um certo tempo O pessoal reportou já barulho estranho nesse equipamento Então tem que botar o lubrificante correto, ele já está no estoque, aquele código lá, o azul 6624 Então já tom
+a cuidado com isso, já faz essa lubrificação com essa máquina aí E não pode esquecer de conferir a ficha técnica dele para colocar a quantidade certa, tá? Da outra vez deu problema Então depois disso eu preciso
+ também que vocês dêem uma verificada no nível de óleo lá da desencapadora, lá da linha 12 É um equipamento que do nada dá uns picos de temperatura lá, o pessoal já reportou, já mandou para a gerência Foi uma m
+erda isso Então revisar mesmo as medições, ver se está tudo certo lá com o nível de óleo dela Porque se sair do óleo recompensado ela vai começar a esquentar e corre risco de parar e vai dar BO E também quem pr
+ecisa dar uma olhada, lá no compressor 5 Aquele lá bem da central, o filtro de ar já passou do ponto Ele estava para ser trocado na última parada, mas ele acabou ficando para agora Então está bem crítico, então
+ tem que fazer a substituição agora, agora no domingo já, não dá para esperar O filtro de novo eu já pechei, mandei o menino trazer lá do almoxarifado Está debaixo da bancada, só vocês pegarem e trocar também,
+tá? E aproveita que você está no compressor, aproveita e dá um polinho lá naquela bomba de circulação Aquela lá do canto direito, o pessoal falou que ela estava fazendo barulho Aproveita e dá uma olhadinha lá p
+ara mim, tá? Basicamente isso, qualquer coisa aí você não me avisa, tá? Porque eu estou de folga, segundamente resolve Valeu!"""
     
     try:
         resposta = await process_pdf_with_assistant(pdf_path, problema, client)
