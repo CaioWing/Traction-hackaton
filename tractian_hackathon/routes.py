@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from models import SafetyResponse
 from services.llm_service import process_documents_with_assistant
+from services.offline_service import generate_service_order_pdf
 from services.audio_service import AudioTranscriber
 from openai import OpenAI
 import json
@@ -49,7 +50,33 @@ def save_to_file(data: dict, filename: str = "service_orders.json"):
         return False
 
 
-def load_from_file(filename: str = "service_orders.json") -> List[dict]:
+def load_service_order(item_id: str):
+    """Load service order from MongoDB or file system."""
+    try:
+        from app import db_connection
+        db = db_connection.get_db()
+        
+        if db is not None:
+            # If MongoDB is available, get from database
+            mycol = db["serviceOrders"]
+            service_order = mycol.find_one({'_id': ObjectId(item_id)})
+            if service_order:
+                # Convert ObjectId to string
+                service_order['_id'] = str(service_order['_id'])
+                return service_order
+        else:
+            # If MongoDB is unavailable, get from file
+            services = load_from_file()
+            for service in services:
+                if service.get('_id') == item_id:
+                    return service
+        
+        return None
+    except Exception as e:
+        logger.error(f"Error loading service order: {str(e)}")
+        return None
+
+def load_from_file(filename: str = "service_orders.json") -> list:
     """Load data from JSON file when MongoDB is unavailable"""
     try:
         if os.path.exists(filename):
@@ -59,6 +86,121 @@ def load_from_file(filename: str = "service_orders.json") -> List[dict]:
     except Exception as e:
         logger.error(f"Error loading from file: {str(e)}")
         return []
+
+@router.get("/service/{item_id}/pdf")
+async def generate_pdf(item_id: str, download: Optional[bool] = False):
+    """
+    Generate a PDF for a specific service order.
+    
+    Args:
+        item_id: The ID of the service order
+        download: If True, the PDF will be downloaded instead of viewed in browser
+    
+    Returns:
+        FileResponse: The generated PDF file
+    """
+    try:
+        # Get the service order
+        service_order = load_service_order(item_id)
+        if not service_order:
+            raise HTTPException(
+                status_code=404,
+                detail="Service order not found"
+            )
+        
+        # Create output directory if it doesn't exist
+        output_dir = "output/pdf"
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Generate the PDF
+        pdf_path = generate_service_order_pdf(service_order, output_dir)
+        
+        if not os.path.exists(pdf_path):
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to generate PDF"
+            )
+        
+        # Set the filename for download
+        filename = os.path.basename(pdf_path)
+        
+        # Return the PDF file
+        headers = {
+            'Content-Disposition': f'{"attachment" if download else "inline"}; filename="{filename}"'
+        }
+        
+        return FileResponse(
+            path=pdf_path,
+            headers=headers,
+            media_type='application/pdf'
+        )
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error generating PDF: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating PDF: {str(e)}"
+        )
+
+@router.get("/service/bulk-pdf")
+async def generate_bulk_pdf(service_ids: str):
+    """
+    Generate PDFs for multiple service orders and return them as a zip file.
+    
+    Args:
+        service_ids: Comma-separated list of service order IDs
+    
+    Returns:
+        FileResponse: A zip file containing all generated PDFs
+    """
+    try:
+        from zipfile import ZipFile
+        import tempfile
+        
+        # Parse service IDs
+        id_list = [id.strip() for id in service_ids.split(',')]
+        
+        # Create temporary directory for PDFs
+        with tempfile.TemporaryDirectory() as temp_dir:
+            pdf_files = []
+            
+            # Generate PDFs for each service order
+            for service_id in id_list:
+                service_order = load_service_order(service_id)
+                if service_order:
+                    pdf_path = generate_service_order_pdf(service_order, temp_dir)
+                    if os.path.exists(pdf_path):
+                        pdf_files.append(pdf_path)
+            
+            if not pdf_files:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No valid service orders found"
+                )
+            
+            # Create zip file
+            zip_path = os.path.join(temp_dir, "service_orders.zip")
+            with ZipFile(zip_path, 'w') as zip_file:
+                for pdf_file in pdf_files:
+                    zip_file.write(pdf_file, os.path.basename(pdf_file))
+            
+            # Return the zip file
+            return FileResponse(
+                path=zip_path,
+                headers={'Content-Disposition': 'attachment; filename="service_orders.zip"'},
+                media_type='application/zip'
+            )
+            
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error generating bulk PDFs: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating bulk PDFs: {str(e)}"
+        )
 
 
 @router.get("/addService")
