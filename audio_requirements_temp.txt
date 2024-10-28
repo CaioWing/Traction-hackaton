@@ -1,3 +1,0 @@
-PyAudio
-SpeechRecognition
-openai

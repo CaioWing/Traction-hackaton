@@ -17,6 +17,7 @@ pyaudio = "^0.2.14"
 fastapi = "^0.115.4"
 pymongo = "^4.10.1"
 uvicorn = "^0.32.0"
+pandas = "^2.2.3"
 
 
 [build-system]
