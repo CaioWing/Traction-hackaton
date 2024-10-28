@@ -7,12 +7,9 @@ import json
 import asyncio
 from typing import List, Dict
 from pydantic import BaseModel
-<<<<<<< HEAD
 from fastapi import FastAPI
 import pymongo
 
-=======
->>>>>>> ddd93faebd3e6fa9347d3ad6321f97c5c89391f2
 
 class SafetyStep(BaseModel):
     ordem: int
@@ -21,27 +18,18 @@ class SafetyStep(BaseModel):
     medidas_seguranca: List[str]
     duracao: str
 
-<<<<<<< HEAD
 
-=======
->>>>>>> ddd93faebd3e6fa9347d3ad6321f97c5c89391f2
 class SafetySolution(BaseModel):
     passos: List[SafetyStep]
     equipamentos_necessarios: List[str]
     observacoes: List[str]
     referencias: List[str]
 
-<<<<<<< HEAD
 
 class SafetyResponse(BaseModel):
     problema: str
     solucao: SafetySolution
 
-=======
-class SafetyResponse(BaseModel):
-    problema: str
-    solucao: SafetySolution
->>>>>>> ddd93faebd3e6fa9347d3ad6321f97c5c89391f2
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """Extracts text from a PDF file."""
@@ -162,7 +150,6 @@ Mantenha suas respostas técnicas e precisas, fundamentadas no conteúdo do docu
             response_format=SafetyResponse,
         )
     )
-<<<<<<< HEAD
 
     safety_response = response.choices[0].message.parsed
 
@@ -194,28 +181,6 @@ async def read_item():
         mycol.insert_one(resposta)
         print("Aqui?")
         return "Added with success!"
-=======
-    
-    safety_response = response.choices[0].message.parsed
-    
-    # Save response to file
-    output_filename = f"resposta_{problema[:30]}.json"
-    with open(output_filename, "w", encoding="utf-8") as f:
-        json.dump(safety_response.model_dump(), f, ensure_ascii=False, indent=4)
-    print(f"\nResposta salva em: {output_filename}")
-    
-    return safety_response
-
-async def main():
-    # Initialize the OpenAI client
-    client = OpenAI()  # Make sure OPENAI_API_KEY is set in your environment variables
-    
-    pdf_path = "prompts/nr-12-atualizada-2022-1.pdf"
-    problema = "Preciso de uma manutenção na minha máquina de prensa"
-    
-    try:
-        resposta = await process_pdf_with_assistant(pdf_path, problema, client)
->>>>>>> ddd93faebd3e6fa9347d3ad6321f97c5c89391f2
     except Exception as e:
         print(f"Erro ao processar PDF: {e}")
         return "Deu problema " + str(e)
