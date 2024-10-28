@@ -206,4 +206,4 @@ async def read_item():
 async def read_item():
     mycol = mydb["serviceOrders"]
     print(list(mycol.find({}, {'_id': False})))
-    return MyJSONEncoder().encode(list(mycol.find({})))
+    return json.loads(MyJSONEncoder().encode(list(mycol.find({}))))
